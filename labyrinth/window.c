@@ -1,9 +1,9 @@
 /*!\file window.c
  *
- * \brief Walk in a labyrinth with floor marking and compass.
+ * \brief Walk in a labyrinth with wall and eating some cool things.
  *
- * \author Farès BELHADJ, amsi@ai.univ-paris8.fr
- * \date March 05 2018
+ * \author Ghouibi Ghassen adapted from Farès BELHADJ
+ * \date 24 March 2019
  */
 #include <GL4D/gl4dg.h>
 #include <GL4D/gl4dp.h>
@@ -24,9 +24,11 @@ static void draw_wall(void);
 static void nitro_position(void);
 static void draw_nitro(void);
 static void slower_position(void);
+static void show_laby(void);
+
+
 /* from makeLabyrinth.c */
 extern unsigned int * labyrinth(int w, int h);
-
 /*!\brief opened window width and height */
 static int _wW = 800, _wH = 600;
 /*!\brief mouse position (modified by pmotion function) */
@@ -34,7 +36,8 @@ static int _xm = 400, _ym = 300;
 /*!\brief labyrinth to generate */
 static GLuint * _labyrinth = NULL;
 /*!\brief labyrinth side */
-int _raise_wall=0;
+float _raise_wall=0.75;
+int _compteur=0;
 int _no_wall=1;
 static GLuint _lab_side = 15;
 /*!\brief Quad geometry Id  */
@@ -92,7 +95,7 @@ elem _nitro ;
 elem _slower;
 
 /*!\brief the used camera */
-static cam_t _cam = {0, 0, 0,5.0};
+static cam_t _cam = {0,0,0,3.5};
 
 /*!\brief creates the window, initializes OpenGL parameters,
  * initializes data and maps callback functions */
@@ -114,13 +117,13 @@ int main(int argc, char ** argv) {
 }
 
 /*!\brief initializes OpenGL parameters :
- *
- * the clear color, enables face culling, enables blending and sets
- * its blending function, enables the depth test and 2D textures,
- * creates the program shader, the model-view matrix and the
- * projection matrix and finally calls resize that sets the projection
- * matrix and the viewport.
- */
+*
+* the clear color, enables face culling, enables blending and sets
+* its blending function, enables the depth test and 2D textures,
+* creates the program shader, the model-view matrix and the
+* projection matrix and finally calls resize that sets the projection
+* matrix and the viewport.
+*/
 static void initGL(void) {
   glClearColor(0.0f, 0.4f, 0.9f, 0.0f);
   glEnable(GL_CULL_FACE);
@@ -134,9 +137,9 @@ static void initGL(void) {
 }
 
 /*!\brief initializes data : 
- *
- * creates 3D objects (plane and sphere) and 2D textures.
- */
+*
+* creates 3D objects (plane and sphere) and 2D textures.
+*/
 static void initData(void) {
   /* a red-white texture used to draw a compass */
   GLuint northsouth[] = {(255 << 24) + 255, -1};
@@ -166,7 +169,7 @@ static void initData(void) {
 
   /* creation and parametrization of the wall */
   SDL_Surface * t;
-  int mode=0;
+  int mode;
   glGenTextures(1, &_wallTexId);
   glBindTexture(GL_TEXTURE_2D, _wallTexId);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -212,11 +215,11 @@ static void initData(void) {
 }
 
 /*!\brief function called by GL4Dummies' loop at resize. Sets the
- *  projection matrix and the viewport according to the given width
- *  and height.
- * \param w window width
- * \param h window height
- */
+*  projection matrix and the viewport according to the given width
+*  and height.
+* \param w window width
+* \param h window height
+*/
 static void resize(int w, int h) {
   _wW = w; 
   _wH = h;
@@ -227,8 +230,8 @@ static void resize(int w, int h) {
 }
 
 /*!\brief Help to carry out your work. Tracking the position in the
- * world with the position on the map.
- */
+* world with the position on the map.
+*/
 static void updatePosition(void) {
   GLfloat xf, zf;
   static int xi = -1, zi = -1;
@@ -244,7 +247,6 @@ static void updatePosition(void) {
   
   xi=(int) xf;
   zi=(int) zf;
-
   if(xi >= 0 && xi < _lab_side && zi >= 0 && zi < _lab_side) {
       GLfloat nx = xf - _nitro.x;
       GLfloat nz = zf - _nitro.z;
@@ -263,15 +265,17 @@ static void updatePosition(void) {
       if(_labyrinth[zi * _lab_side + xi] == 7 && distance < _cam.around) {
         _labyrinth[zi * _lab_side + xi] = 0;
          glBindTexture(GL_TEXTURE_2D, _planeTexId);
-        /* try to use the glTexSubImage2D function instead of the glTexImage2D function */
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _lab_side, _lab_side, 0, GL_RGBA, GL_UNSIGNED_BYTE, _labyrinth);
-        _raise_wall=1;
+        _raise_wall+=0.25;
+        if(_compteur<1 && _raise_wall>1.0)
+          _compteur++;
+        
         slower_position();
     }
   }
 }
 
-/*!\brief update nitro*/
+/*!\brief update nitro position*/
 static void nitro_position(){
     GLfloat x, z;
     do {
@@ -284,7 +288,7 @@ static void nitro_position(){
     _labyrinth[(int)z * _lab_side + (int)x] = 5;
 }
 
-/*!\brief update nitro*/
+/*!\brief update slower position*/
 static void slower_position(){
     GLfloat x, z;
     do {
@@ -297,61 +301,41 @@ static void slower_position(){
     _labyrinth[(int)z * _lab_side + (int)x] = 7;
   
 }
-
 /*!\brief detect collision */
 static int collision(void) {
-  GLfloat xf, zf;
-  static int xi = -1, zi = -1;
-  /* translate to lower-left */
-  xf = _cam.x + _planeScale;
-  zf = -_cam.z + _planeScale;
-  /* scale to 1.0 x 1.0 */
-  xf = xf / (2.0f * _planeScale);
-  zf = zf / (2.0f * _planeScale);
-  /* rescale to _lab_side x _lab_side */
-  xf = xf * _lab_side;
-  zf = zf * _lab_side;
+  	
 
-  xi=(int) xf;
-  zi=(int) zf;
+    GLfloat xf, zf;
+	static int xi = -1, zi = -1;
+	/* translate to lower-left */
+	xf = _cam.x + _planeScale+_cam.around;
+	zf = -_cam.z + _planeScale+_cam.around;
+	/* scale to 1.0 x 1.0 */
+	xf = xf / (2.0f * _planeScale);
+	zf = zf / (2.0f * _planeScale);
+	/* rescale to _lab_side x _lab_side */
+	xf = xf * _lab_side;
+	zf = zf * _lab_side;
 
-  GLfloat theta [4][2] = {
-    { -cos(_cam.theta), sin(_cam.theta)},
-    {  cos(_cam.theta), sin(_cam.theta)},
-    { -sin(_cam.theta), cos(_cam.theta)},
-    {  sin(_cam.theta), -cos(_cam.theta)}
-  };
-    //printf("theta %f %f %f %f \n",theta[0][0],theta[0][1],theta[1][0],theta[1][1]);
-    for(int i=0;i<4;i++){
-      xf = _cam.x  + _planeScale + theta[i][0] * (_cam.around)/2; 
-      zf = -_cam.z + _planeScale + theta[i][1] * (_cam.around)/4;
-      
-      /* scale to 1.0 x 1.0 */
-      xf = xf / (2.0f * _planeScale);
-      zf = zf / (2.0f * _planeScale);
-      
-      /* rescale to _lab_side x _lab_side */
-      xf = xf * _lab_side;
-      zf = zf * _lab_side;
+	xi=(int) xf;
+	zi=(int) zf;
 
-      if((int)xf != xi || (int)zf != zi) {
-        xi = (int)xf;
-        zi = (int)zf;
-      } 
+    if((int)xf != xi || (int)zf != zi) {
+      xi = (int)xf;
+      zi = (int)zf;
+    } 
+    printf("%d %d \n",xi,zi);
+    if(xi >= 0 && xi < _lab_side && zi >= 0 && zi < _lab_side && _labyrinth[zi * _lab_side + xi] == -1)
+      return 1;
+  
 
-      if(xi >= 0 && xi < _lab_side && zi >= 0 && zi < _lab_side && _labyrinth[zi * _lab_side + xi] == -1){
-        printf("Collision detected \n");
-        return 1;
-      }
-    }
-    printf("You can continue no collision detected\n");
   return 0;
 }
 /*!\brief function called by GL4Dummies' loop at idle.
- * 
- * uses the virtual keyboard states to move the camera according to
- * direction, orientation and time (dt = delta-time)
- */
+* 
+* uses the virtual keyboard states to move the camera according to
+* direction, orientation and time (dt = delta-time)
+*/
 static void idle(void) {
   double dt, dtheta = M_PI;
   static double t0 = 0, t;
@@ -372,7 +356,7 @@ static void idle(void) {
   if(_keys[KDOWN]) {
     _cam.x += dt * step * sin(_cam.theta);
     _cam.z += dt * step * cos(_cam.theta);
-    if(collision()) {
+    if(collision()) {    
         _cam.x -= dt * step * sin(_cam.theta);
         _cam.z -= dt * step * cos(_cam.theta);
     }
@@ -381,11 +365,11 @@ static void idle(void) {
 }
 
 /*!\brief function called by GL4Dummies' loop at key-down (key
- * pressed) event.
- * 
- * stores the virtual keyboard states (1 = pressed) and toggles the
- * boolean parameters of the application.
- */
+* pressed) event.
+* 
+* stores the virtual keyboard states (1 = pressed) and toggles the
+* boolean parameters of the application.
+*/
 static void keydown(int keycode) {
   GLint v[2];
   switch(keycode) {
@@ -418,7 +402,6 @@ static void keydown(int keycode) {
   case 'n':
     glBindTexture(GL_TEXTURE_2D, _planeTexId);
     _no_wall=!(_no_wall);
-    /* try to use the glTexSubImage2D function instead of the glTexImage2D function */
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _lab_side, _lab_side, 0, GL_RGBA, GL_UNSIGNED_BYTE, _labyrinth);
     break;
     /* when 'm' pressed, toggle between mipmapping or nearest for the plane texture */
@@ -452,10 +435,10 @@ static void keydown(int keycode) {
 }
 
 /*!\brief function called by GL4Dummies' loop at key-up (key
- * released) event.
- * 
- * stores the virtual keyboard states (0 = released).
- */
+* released) event.
+* 
+* stores the virtual keyboard states (0 = released).
+*/
 static void keyup(int keycode) {
   switch(keycode) {
   case GL4DK_LEFT:
@@ -481,6 +464,48 @@ static void pmotion(int x, int y) {
   _ym = y;
 }
 
+/*!\brief function to show labyrinth values*/
+static void show_laby(){
+  for(int j=1;j<=15*15;j++){
+      if(_labyrinth[(j-1)]==-1)
+        printf(" 1 ");
+      else
+        printf(" %d ",_labyrinth[(j-1)]);
+      if(j%15==0)
+        printf("\n");
+  }  
+  printf("\n");
+}
+
+/*!\brief function to draw the wall called in the principal loop of draw function  */
+static void draw_wall(){
+  //fit the world to laby
+  GLfloat sc = _planeScale/_lab_side;
+  GLfloat res = _planeScale/_lab_side * 2.0f;
+
+  //show_laby();
+  for(int i = 0; i < _lab_side; i++){
+    for(int j = 0; j < _lab_side; j++){
+      //to select the white part of labyrinth (_lab_side - 1 - j) * _lab_side + i permet de parcourir le labyrinth
+      if(_labyrinth[(_lab_side - 1 - j) * _lab_side + i]==-1){
+        int xi = ((int) (i - _lab_side/2) );
+        int zi = ((int) (j - _lab_side/2) );
+        gl4duPushMatrix(); {
+          //we can also have bigger wall just we have to change parametre in Translatef
+          gl4duTranslatef(xi*res,sc,zi*res);
+          gl4duScalef(sc, sc, sc);
+          gl4duSendMatrices();
+        } gl4duPopMatrix();
+
+        glCullFace(GL_BACK);
+        glBindTexture(GL_TEXTURE_2D, _wallTexId);
+        gl4dgDraw(_cube);
+
+      }
+    }
+  }
+}
+/*!\brief function to draw nitro called in the principal loop of draw function */
 void draw_nitro(){
 
   GLfloat res = _planeScale/_lab_side * 2.0f;
@@ -495,9 +520,9 @@ void draw_nitro(){
       glCullFace(GL_BACK);
       glBindTexture(GL_TEXTURE_2D,_nitroTexId);
       gl4dgDraw(_cube);
-  
-}
 
+}
+/*!\brief function to draw slower called in the principal loop of draw function */
 void draw_slower(){
 
   GLfloat res = _planeScale/_lab_side * 2.0f;
@@ -513,40 +538,6 @@ void draw_slower(){
       glBindTexture(GL_TEXTURE_2D,_slowerTexId);
       gl4dgDraw(_cube);
   
-}
-/*!\brief function to show labyrinth values*/
-void show_laby(){
-  for(int j=1;j<=15*15;j++){
-      printf("%d|",_labyrinth[(j-1)]);
-  }  
-  printf("\n");
-}
-
-/*!\brief function to draw the walll */
-static void draw_wall(){
-  //fit the world to laby
-  GLfloat sc = _planeScale/_lab_side;
-  //show_laby();
-  for(int i = 0; i < _lab_side; i++){
-    for(int j = 0; j < _lab_side; j++){
-      //to select the white part of labyrinth (_lab_side - 1 - j) * _lab_side + i permet de parcourir le labyrinth
-      if(_labyrinth[(_lab_side - 1 - j) * _lab_side + i]==-1){
-        GLfloat xi = ((int) (i - _lab_side/2) )*sc * 2.0;
-        GLfloat zi = ((int) (j - _lab_side/2) )*sc * 2.0;
-        gl4duPushMatrix(); {
-          //we can also have bigger wall just we have to change the y in Translatef
-          gl4duTranslatef(xi,_raise_wall*sc,zi);
-          gl4duScalef(sc, sc, sc);
-          gl4duSendMatrices();
-        } gl4duPopMatrix();
-
-        glCullFace(GL_BACK);
-        glBindTexture(GL_TEXTURE_2D, _wallTexId);
-        gl4dgDraw(_cube);
-
-      }
-    }
-  }
 }
 
 /*!\brief function called by GL4Dummies' loop at draw.*/
@@ -585,19 +576,18 @@ static void draw(void) {
   glUniform1f(glGetUniformLocation(_pId, "texRepeat"), 1.0);
   /* draws the plane */
   gl4dgDraw(_plane);
-  if(_no_wall){
+  if(_no_wall)
     draw_wall();
-  }
   draw_nitro();
   draw_slower();
 
   /* the compass should be drawn in an orthographic projection, thus
-   * we should bind the projection matrix; save it; load identity;
-   * bind the model-view matrix; modify it to place the compass at the
-   * top left of the screen and rotate the compass according to the
-   * camera orientation (theta); send matrices; restore the model-view
-   * matrix; bind the projection matrix and restore it; and then
-   * re-bind the model-view matrix for after.*/
+  * we should bind the projection matrix; save it; load identity;
+  * bind the model-view matrix; modify it to place the compass at the
+  * top left of the screen and rotate the compass according to the
+  * camera orientation (theta); send matrices; restore the model-view
+  * matrix; bind the projection matrix and restore it; and then
+  * re-bind the model-view matrix for after.*/
   gl4duBindMatrix("projectionMatrix");
   gl4duPushMatrix(); {
     gl4duLoadIdentityf();
@@ -673,7 +663,7 @@ static void draw(void) {
 }
 
 /*!\brief function called at exit. Frees used textures and clean-up
- * GL4Dummies.*/
+* GL4Dummies.*/
 static void quit(void) {
   if(_labyrinth) 
     free(_labyrinth);    

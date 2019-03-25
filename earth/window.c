@@ -196,7 +196,7 @@ static void draw(void) {
   glBindTexture(GL_TEXTURE_2D, _tId[1]);
   glUniform1i(glGetUniformLocation(_pId, "tex0"), 0);
   glUniform1i(glGetUniformLocation(_pId, "tex1"), 1);
-  glUniform4fv(glGetUniformLocation(_pId, "lumPos"), 1, lumPos);
+  //glUniform4fv(glGetUniformLocation(_pId, "lumPos"), 1, lumPos);
   glUniform1i(glGetUniformLocation(_pId, "specular"), _specular);
   /* envoi de toutes les matrices stockées par GL4D */
   gl4duPushMatrix(); {

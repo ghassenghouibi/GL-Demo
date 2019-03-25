@@ -18,7 +18,7 @@ CPPFLAGS = -I.
 LDFLAGS = -lm -lSDL2_image
 
 # définition des fichiers et dossiers
-PROGNAME = sample3d_01
+PROGNAME = labyrinth
 VERSION = 1.7.1
 distdir = $(PROGNAME)-$(VERSION)
 HEADERS = 
