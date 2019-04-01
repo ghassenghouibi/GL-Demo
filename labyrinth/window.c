@@ -62,7 +62,6 @@ static GLfloat _planeScale = 100.0f;
 static GLboolean _anisotropic = GL_FALSE;
 /*!\brief boolean to toggle mipmapping */
 static GLboolean _mipmap = GL_FALSE;
-double step = 15.0;
 static const char* _wall_filename="pics/wall.jpg";
 static const char* _nitro_filename="pics/nitro.jpg";
 static const char* _slower_filename="pics/tnt.jpg";
@@ -84,7 +83,7 @@ typedef struct cam_t cam_t;
 struct cam_t {
   GLfloat x, z;
   GLfloat theta;
-  GLfloat around;
+  GLfloat bbox;
 };
 /*!\brief struct to nitro and slower*/
 typedef struct elem elem;
@@ -95,7 +94,7 @@ elem _nitro ;
 elem _slower;
 
 /*!\brief the used camera */
-static cam_t _cam = {0,0,0,3.5};
+static cam_t _cam = {0,0,0,5.5};
 
 /*!\brief creates the window, initializes OpenGL parameters,
  * initializes data and maps callback functions */
@@ -251,10 +250,11 @@ static void updatePosition(void) {
       GLfloat nx = xf - _nitro.x;
       GLfloat nz = zf - _nitro.z;
       double distance = sqrt(nx * nx + nz * nz);
-      if(_labyrinth[zi * _lab_side + xi] == 5 && distance < _cam.around) {
+      if(_labyrinth[zi * _lab_side + xi] == 5 && distance < _cam.bbox) {
         _labyrinth[zi * _lab_side + xi] = 0;
          glBindTexture(GL_TEXTURE_2D, _planeTexId);
-         step+=10.0;
+         //step+=10.0;
+         printf("Ow you have eaten a bad thing \n");
         /* try to use the glTexSubImage2D function instead of the glTexImage2D function */
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _lab_side, _lab_side, 0, GL_RGBA, GL_UNSIGNED_BYTE, _labyrinth);
         nitro_position();
@@ -262,7 +262,7 @@ static void updatePosition(void) {
       GLfloat sx = xf - _slower.x;
       GLfloat sz = zf - _slower.z;
       distance = sqrt(sx * sx + sz * sz);
-      if(_labyrinth[zi * _lab_side + xi] == 7 && distance < _cam.around) {
+      if(_labyrinth[zi * _lab_side + xi] == 7 && distance < _cam.bbox) {
         _labyrinth[zi * _lab_side + xi] = 0;
          glBindTexture(GL_TEXTURE_2D, _planeTexId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _lab_side, _lab_side, 0, GL_RGBA, GL_UNSIGNED_BYTE, _labyrinth);
@@ -303,33 +303,59 @@ static void slower_position(){
 }
 /*!\brief detect collision */
 static int collision(void) {
-  	
+  GLfloat xf, zf;
+  int xi = -1, zi = -1, i;
+  int col = 0;
+  int _collision_dir[] = {0, 0, 0, 0};
+  GLfloat dir[4][2] = {
+    { -cos(_cam.theta), sin(_cam.theta)},
+    {  cos(_cam.theta), sin(_cam.theta)},
+    { -sin(_cam.theta), cos(_cam.theta)},
+    {  -sin(_cam.theta), -cos(_cam.theta)}
+  };
 
-    GLfloat xf, zf;
-	static int xi = -1, zi = -1;
-	/* translate to lower-left */
-	xf = _cam.x + _planeScale+_cam.around;
-	zf = -_cam.z + _planeScale+_cam.around;
-	/* scale to 1.0 x 1.0 */
-	xf = xf / (2.0f * _planeScale);
-	zf = zf / (2.0f * _planeScale);
-	/* rescale to _lab_side x _lab_side */
-	xf = xf * _lab_side;
-	zf = zf * _lab_side;
-
-	xi=(int) xf;
-	zi=(int) zf;
+  for(i = 0; i < 4; i++) {
+    xf = _cam.x + _planeScale + dir[i][0] * _cam.bbox; 
+    zf = -_cam.z + _planeScale + dir[i][1] * _cam.bbox/4;
+    /* scale to 1.0 x 1.0 */
+    xf = xf / (2.0f * _planeScale);
+    zf = zf / (2.0f * _planeScale);
+    /* rescale to _lab_side x _lab_side */
+    xf = xf * _lab_side;
+    zf = zf * _lab_side;
 
     if((int)xf != xi || (int)zf != zi) {
       xi = (int)xf;
       zi = (int)zf;
     } 
-    printf("%d %d \n",xi,zi);
-    if(xi >= 0 && xi < _lab_side && zi >= 0 && zi < _lab_side && _labyrinth[zi * _lab_side + xi] == -1)
-      return 1;
-  
 
-  return 0;
+    if(xi >= 0 && xi < _lab_side && zi >= 0 && zi < _lab_side && _labyrinth[zi * _lab_side + xi] == -1)
+      _collision_dir[i] = 1;
+    else
+      _collision_dir[i] = 0;
+  }
+
+  for(i = 0; i < 4; i++) {
+    if(_collision_dir[i]) {
+      col = 1;
+    }
+    /*switch(i){
+    	case 0:
+    		printf("collision gauche gauche\n");
+    		break;
+    	case 1:
+    		printf("collision droite droite\n");
+    		break;
+    	case 2:
+    		printf("collision droite bas \n");
+    		break;
+    	case 3:
+    		printf("collision gauche bas \n");
+    		break;
+    }*/
+  }
+
+  return col;
 }
 /*!\brief function called by GL4Dummies' loop at idle.
 * 
@@ -337,7 +363,7 @@ static int collision(void) {
 * direction, orientation and time (dt = delta-time)
 */
 static void idle(void) {
-  double dt, dtheta = M_PI;
+  double dt, dtheta = M_PI,step=15.0;
   static double t0 = 0, t;
   dt = ((t = gl4dGetElapsedTime()) - t0) / 1000.0;
   t0 = t;
