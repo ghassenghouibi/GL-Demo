@@ -18,11 +18,11 @@ CPPFLAGS = -I.
 LDFLAGS = -lm -lSDL2_ttf
 
 # définition des fichiers et dossiers
-PROGNAME = texte_ttf
+PROGNAME = Shrek
 VERSION = 1.0
 distdir = $(PROGNAME)-$(VERSION)
-HEADERS = 
-SOURCES = window.c
+HEADERS =  audioHelper.h animations.h
+SOURCES = text.c animations.c window.c
 OBJ = $(SOURCES:.c=.o)
 DOXYFILE = documentation/Doxyfile
 EXTRAFILES = COPYING $(wildcard shaders/*.?s) DejaVuSans-Bold.ttf
