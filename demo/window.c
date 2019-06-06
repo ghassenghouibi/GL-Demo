@@ -17,7 +17,7 @@ static void keydown(int keycode);
  * ce tableau se termine toujours par l'élémént {0, NULL, NULL,
  * NULL} */
 static GL4DHanime _animations[] = {
-  {17000, text_animation, NULL, NULL },//credits2.c
+  {17000, text_animation, NULL, NULL },//text.c
 
   {    0, NULL, NULL, NULL }
 };
@@ -40,7 +40,7 @@ int main(int argc, char ** argv) {
   gl4duwKeyDownFunc(keydown);
   gl4duwDisplayFunc(gl4dhDraw);
 
-  //ahInitAudio("music/RiverFlowsInYou.ogg");
+  ahInitAudio("public/music/shrek-soundtrack.mp3");
   gl4duwMainLoop();
   return 0;
 }

@@ -58,23 +58,27 @@ static void mixCallback(void *udata, Uint8 *stream, int len) {
  *  le fichier audio.
  */
 void ahInitAudio(const char * file) {
-  int mixFlags = MIX_INIT_OGG, res;
+#if defined(__APPLE__)
+  int mult = 1;
+#else
+  int mult = 2;
+#endif
+  int mixFlags = MIX_INIT_MP3, res;
   res = Mix_Init(mixFlags);
   if( (res & mixFlags) != mixFlags ) {
     fprintf(stderr, "Mix_Init: Erreur lors de l'initialisation de la bibliotheque SDL_Mixer\n");
     fprintf(stderr, "Mix_Init: %s\n", Mix_GetError());
-    exit(-3);
+    //exit(3); commenté car ne réagit correctement sur toutes les architectures
   }
-  if(Mix_OpenAudio(22050, AUDIO_S16LSB, 2, 1024) < 0)
-    exit(-4);
+  if(Mix_OpenAudio(44100, AUDIO_S16LSB, 1, mult * 1024) < 0)
+    exit(4);  
   if(!(_mmusic = Mix_LoadMUS(file))) {
     fprintf(stderr, "Erreur lors du Mix_LoadMUS: %s\n", Mix_GetError());
-    exit(-5);
+    exit(5);
   }
   Mix_SetPostMix(mixCallback, NULL);
   if(!Mix_PlayingMusic())
     Mix_PlayMusic(_mmusic, 1);
-  gl4dhStartingSignal();
 }
 
 /*!\brief Libère l'audio.

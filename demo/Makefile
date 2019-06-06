@@ -15,14 +15,14 @@ CP = rsync -R
 # déclaration des options du compilateur
 CFLAGS = -Wall -O3
 CPPFLAGS = -I.
-LDFLAGS = -lm -lSDL2_ttf
+LDFLAGS = -lm -lSDL2_ttf -lSDL2_mixer
 
 # définition des fichiers et dossiers
 PROGNAME = Shrek
 VERSION = 1.0
 distdir = $(PROGNAME)-$(VERSION)
-HEADERS =  audioHelper.h animations.h
-SOURCES = text.c animations.c window.c
+HEADERS =  audioHelper.h animations.h 
+SOURCES = text.c audioHelper.c animations.c window.c
 OBJ = $(SOURCES:.c=.o)
 DOXYFILE = documentation/Doxyfile
 EXTRAFILES = COPYING $(wildcard shaders/*.?s) DejaVuSans-Bold.ttf
