@@ -15,14 +15,14 @@ CP = rsync -R
 # déclaration des options du compilateur
 CFLAGS = -Wall -O3
 CPPFLAGS = -I.
-LDFLAGS = -lm -lSDL2_ttf -lSDL2_mixer
+LDFLAGS = -lm -lSDL2_ttf -lSDL2_mixer -lSDL2_image -lassimp
 
 # définition des fichiers et dossiers
 PROGNAME = Shrek
 VERSION = 1.0
 distdir = $(PROGNAME)-$(VERSION)
-HEADERS =  audioHelper.h animations.h 
-SOURCES = text.c audioHelper.c animations.c window.c
+HEADERS =  audioHelper.h animations.h assimp.h assimp3.h
+SOURCES = text.c audioHelper.c flight.c assimp.c assimp3.c makeLabyrinth.c laby.c animations.c window.c
 OBJ = $(SOURCES:.c=.o)
 DOXYFILE = documentation/Doxyfile
 EXTRAFILES = COPYING $(wildcard shaders/*.?s) DejaVuSans-Bold.ttf
@@ -77,4 +77,4 @@ doc: $(DOXYFILE)
 	cd documentation && doxygen && cd ..
 
 clean:
-	@$(RM) -r $(PROGNAME) $(OBJ) *~ $(distdir).tgz gmon.out core.* documentation/*~ shaders/*~ GL4D/*~ documentation/html dna.txt assimp_log.txt
+	@$(RM) -r $(OBJ) *~ $(distdir).tgz gmon.out core.* documentation/*~ shaders/*~ GL4D/*~ documentation/html dna.txt assimp_log.txt

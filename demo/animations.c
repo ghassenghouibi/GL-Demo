@@ -128,7 +128,23 @@ void animation_damier(int state) {
   }
 }
 
+void animation_laby(int state) {
 
+  switch(state) {
+  case GL4DH_INIT:
+    initDataL();
+    return;
+  case GL4DH_FREE:
+    return;
+  case GL4DH_UPDATE_WITH_AUDIO:
+    return;
+  default: /* GL4DH_DRAW */
+    drawLaby();
+    idle();
+
+    return;
+  }
+}
 
 
 void animationsInit(void) {

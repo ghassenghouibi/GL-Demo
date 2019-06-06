@@ -18,7 +18,7 @@ static void init_text(void) {
   SDL_Color c = {255, 0, 0, 0};
   SDL_Surface * d, * s;
   TTF_Font * font = NULL;
-  _pId = gl4duCreateProgram("<vs>shaders/credits.vs", "<fs>shaders/credits.fs", NULL);
+  _pId = gl4duCreateProgram("<vs>shaders/text.vs", "<fs>shaders/text.fs", NULL);
   _quad = gl4dgGenQuadf();
   glGenTextures(1, &_textTexId);
   glBindTexture(GL_TEXTURE_2D, _textTexId);

@@ -17,9 +17,10 @@ static void keydown(int keycode);
  * ce tableau se termine toujours par l'élémént {0, NULL, NULL,
  * NULL} */
 static GL4DHanime _animations[] = {
-  {17000, text_animation, NULL, NULL },//text.c
-
-  {    0, NULL, NULL, NULL }
+    {30000, animation_laby, NULL, NULL  },//laby.c
+    {18000, text_animation, NULL, NULL },//text.c
+    {40090, animation_base, NULL, NULL },//flight.c
+    {    0, NULL, NULL, NULL }
 };
 
 /*!\brief dimensions initiales de la fenêtre */
@@ -84,6 +85,6 @@ static void keydown(int keycode) {
 /*!\brief appelée à la sortie du programme (atexit).
  */
 static void quit(void) {
-//  ahClean();
+  ahClean();
   gl4duClean(GL4DU_ALL);
 }
