@@ -42,18 +42,12 @@ extern "C" {
   extern void animation_landing(int state);
   extern void animationsInit(void);
   extern void animation_laby(int state);
-  extern void animation_Arrte(int state);
-  extern void animation_Newcity(int state);
-  /* Dans base.c */
   extern void initDataL2(void);
   extern void drawLaby2(void);
   extern void idle2(void);
-  /* Dans earth.c */
   extern void idleNatu(void);
   extern void initNatu(void);
   extern void drawNatu(void);
-  // extern void earth_init(void);
-  // extern void earth_draw(void);
 
 
   extern void initDataL(void);

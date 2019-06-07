@@ -100,21 +100,16 @@ static GLuint _pId = 0;
 
 GLfloat landscape_nuit_y;
 
-//static GLfloat _x = 0, _y = 0, _z = 0, _alpha = 0;
-//static GLfloat _x1 = 0, _y1 = 5, _z1 = 0;
-//static GLfloat _x2 = 0, _y2 = 1, _z2 = 0;
 
 static GLfloat  _alpha = 0;
 //_x0 = 1, _z0 = 1, _y0 = 10, _radius = 30;
 
 
-static char models[]="public/model/tree/Tree.obj";
-//static char modelsbirds[] = "model/Re Outbreak file ZooBird.obj";
 
+static char modelstree[]  ="public/model/tree/Tree.obj";
+static char modelshrek[]  ="public/model/shrek/Shrek.obj";
+static char modelfiona[]  ="public/model/PrincessFiona/fiona.obj";
 
-static char modelstree[] = "public/model/tree/Tree.obj";
-//static char modelstree[]="model/wood/OBJ/Wood.obj";
-//static char modelsrock[]="model/roc/sculpt.obj";
 
 /*!\brief indices des touches de clavier */
 enum kyes_t {
@@ -145,7 +140,6 @@ void initNatu(void) {
   SDL_Surface * tSky;
 
   /* pour g�n�rer une chaine al�atoire diff�rente par ex�cution */
-  //srand(time(NULL));
   /* param�tres GL */
   glClearColor(0.0f, 0.4f, 0.5f, 0.0f);
   glEnable(GL_DEPTH_TEST);
@@ -233,11 +227,9 @@ void initNatu(void) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, _landscape_w, _landscape_h, 0, GL_RED, GL_FLOAT, _heightMap);
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  assimpInit(models);
   assimpInit(modelstree);
-  //assimpInit5(modelsrock);
-
-
+  assimpInit_Shrek(modelshrek);
+  assimpInit_Fiona(modelfiona);
 
   unObjet();
 
@@ -322,17 +314,9 @@ static GLfloat pose[] = {-10, -50,
                           40, 170,};
 
 
-                          static GLfloat posetree[] = {
-
-                          15, 45,
-                          -90, 50, 
-                          -12, 40,
-                          15, 70,  
-                          9, -73, 
-                          30, 45, 
-                          30, -200,
-                          -50, 50, 
-                          40, 170,};
+static GLfloat pos_characters[] = {
+15, 45,
+-90, 50};
 
                    
 /*!\brief dessin de la frame */
@@ -340,10 +324,6 @@ void drawNatu(void) {
 
 
   int ym = 355;
-  // SDL_PumpEvents();
-  // SDL_GetMouseState(&xm, &ym);
-  // printf("%d\n", ym);
-  /* position de la lumi�re (temp et lumpos), altitude de la cam�ra et matrice courante */
   GLfloat temp[4] = {(10 - 1) * cos(_cycle), (10 - 1) * cos(_cycle), -900, 1.0}, lumpos[4], landscape_y, *mat;
   landscape_y = heightMapAltitude(_cam.x, _cam.z);
   landscape_nuit_y = landscape_y;
@@ -391,7 +371,7 @@ void drawNatu(void) {
   gl4dgDraw(_landscape);
 
 
-   for (int i=0;i<1;i++){
+   for (int i=0;i<7;i++){
 
         glUseProgram(_pId);
         glUniform4fv(glGetUniformLocation(_pId, "lumpos"), 0, lumpos);
@@ -412,7 +392,6 @@ void drawNatu(void) {
 
 
 
-      for (int j=0;j<1;j++){
 
         glUseProgram(_pId);
         glUniform4fv(glGetUniformLocation(_pId, "lumpos"), 0, lumpos);
@@ -424,13 +403,30 @@ void drawNatu(void) {
             0.0, 1.0,0.0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _pId);
-        // gl4duTranslatef(Objet1[i].x,heightMapAltitude(Objet1[i].x, Objet1[i].z)+43, Objet1[i].z);
-        gl4duTranslatef(posetree[j], 0, posetree[j+1]);
+        gl4duTranslatef(pos_characters[0], 0, pos_characters[1]);
         gl4duRotatef(270,0,1,0);
         gl4duScalef(15, 40, 50);
-        assimpDrawScene();
+        assimpDrawScene_Shrek();
 
-   }
+        glUseProgram(_pId);
+        glUniform4fv(glGetUniformLocation(_pId, "lumpos"), 0, lumpos);
+        glUniform1i(glGetUniformLocation(_pId, "fog"), _fog);
+        gl4duBindMatrix("modelViewMatrix");
+        gl4duLoadIdentityf();
+        gl4duLookAtf(_cam.x, landscape_y + 5.0, _cam.z, 
+            _cam.x - sin(_cam.theta), landscape_y + 5.0 - (ym - (_windowHeight >> 1)) / (GLfloat)_windowHeight, _cam.z - cos(_cam.theta), 
+            0.0, 1.0,0.0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _pId);
+        gl4duTranslatef(pos_characters[2], 0, pos_characters[3]);
+        gl4duRotatef(270,0,1,0);
+        gl4duScalef(15, 40, 50);
+        assimpDrawScene_Fiona();
+
+   
+
+
+
 
  
   int h=0;
