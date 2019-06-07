@@ -122,7 +122,7 @@ static GLfloat _planeScale = 100.0f;
     glBindTexture(GL_TEXTURE_2D, Tex1);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    if( (t1 = IMG_Load("public/images/grass.jpg")) != NULL ) {
+    if( (t1 = IMG_Load("public/images/rock.jpg")) != NULL ) {
 #ifdef __APPLE__
       int mode = t1->format->BytesPerPixel == 4 ? GL_BGRA : GL_RGB;
 #else
