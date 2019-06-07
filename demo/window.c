@@ -22,7 +22,6 @@ static GL4DHanime _animations[] = {
     {30000, animation_laby, NULL, NULL  },//laby.c
     {40000, animation_flight, NULL, NULL  },//flight.c
     {40000, animation_landing, NULL, NULL  },//landing.c
-    {18000, animation_text, NULL, NULL },//text.c
     {    0, NULL, NULL, NULL }
 };
 

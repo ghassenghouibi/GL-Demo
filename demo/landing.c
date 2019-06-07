@@ -39,12 +39,9 @@ extern void useNoiseTextures(GLuint pid, int shift);
 extern void unuseNoiseTextures(int shift);
 extern void freeNoiseTextures(void);
 
-// static void quit(void);
 void initNatu(void);
 static void resize(int w, int h);
 void idleNatu(void);
-// static void keydown(int keycode);
-// static void keyup(int keycode);
 void drawNatu(void);
 static GLfloat heightMapAltitude(GLfloat x, GLfloat z);
 void unObjet();
@@ -72,13 +69,10 @@ static GLuint _landscape2 = 0;
 /*!\brief identifiant GLSL program du terrain */
 static GLuint _landscape_pId  = 0;
 static GLuint _landscape_pId2 = 0;
-//static GLuint _landscape_pId3  = 0;
 /*!\brief identifiant GLSL program du soleil */
 static GLuint _sun_pId = 0;
 /*!\brief identifiant de la texture de d�grad� de couleurs du terrain */
 static GLuint _terrain_tId = 0;
-//static GLuint _terrain_tId2 = 0;
-//static GLuint _terrain_tId3 = 0;
 /*!\brief identifiant de la texture de d�grad� de couleurs du soleil */
 static GLuint _yellowred_tId = 0;
 /*!\brief identifiant de la texture de plasma */
@@ -118,9 +112,6 @@ enum kyes_t {
   KUP,
   KDOWN
 };
-
-/*!\brief clavier virtuel */
-// static GLuint _keys[] = {0, 0, 0, 0};
 
 typedef struct cam_t cam_t;
 /*!\brief structure de donn�es pour la cam�ra */
@@ -390,7 +381,20 @@ void drawNatu(void) {
 
    }
 
-
+        glUseProgram(_pId);
+        glUniform4fv(glGetUniformLocation(_pId, "lumpos"), 0, lumpos);
+        glUniform1i(glGetUniformLocation(_pId, "fog"), _fog);
+        gl4duBindMatrix("modelViewMatrix");
+        gl4duLoadIdentityf();
+        gl4duLookAtf(_cam.x, landscape_y + 5.0, _cam.z, 
+            _cam.x - sin(_cam.theta), landscape_y + 5.0 - (ym - (_windowHeight >> 1)) / (GLfloat)_windowHeight, _cam.z - cos(_cam.theta), 
+            0.0, 1.0,0.0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _pId);
+        gl4duTranslatef(pos_characters[2], 0, pos_characters[3]);
+        gl4duRotatef(270,0,1,0);
+        gl4duScalef(15, 40, 50);
+        assimpDrawScene_Fiona();
 
 
         glUseProgram(_pId);
@@ -407,30 +411,8 @@ void drawNatu(void) {
         gl4duRotatef(270,0,1,0);
         gl4duScalef(15, 40, 50);
         assimpDrawScene_Shrek();
-
-        glUseProgram(_pId);
-        glUniform4fv(glGetUniformLocation(_pId, "lumpos"), 0, lumpos);
-        glUniform1i(glGetUniformLocation(_pId, "fog"), _fog);
-        gl4duBindMatrix("modelViewMatrix");
-        gl4duLoadIdentityf();
-        gl4duLookAtf(_cam.x, landscape_y + 5.0, _cam.z, 
-            _cam.x - sin(_cam.theta), landscape_y + 5.0 - (ym - (_windowHeight >> 1)) / (GLfloat)_windowHeight, _cam.z - cos(_cam.theta), 
-            0.0, 1.0,0.0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _pId);
-        gl4duTranslatef(pos_characters[2], 0, pos_characters[3]);
-        gl4duRotatef(270,0,1,0);
-        gl4duScalef(15, 40, 50);
-        assimpDrawScene_Fiona();
-
-   
-
-
-
-
  
-  int h=0;
-  gl4duSendMatrices();
+      gl4duSendMatrices();
 
 
 }
