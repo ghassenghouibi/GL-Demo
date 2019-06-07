@@ -128,6 +128,14 @@ void animation_damier(int state) {
   }
 }
 
+
+
+
+void animationsInit(void) {
+  if(!_quadId)
+    _quadId = gl4dgGenQuadf();
+}
+
 void animation_laby(int state) {
 
   switch(state) {
@@ -146,8 +154,39 @@ void animation_laby(int state) {
   }
 }
 
+void animation_landing(int state) {
+  switch(state) {
+  case GL4DH_INIT:
+    initNatu();
+    return;
+  case GL4DH_FREE:
+    
+    return;
+  case GL4DH_UPDATE_WITH_AUDIO:
 
-void animationsInit(void) {
-  if(!_quadId)
-    _quadId = gl4dgGenQuadf();
+    return;
+  default: /* GL4DH_DRAW */
+    drawNatu();
+    idleNatu();
+    return;
+  }
+}
+
+void animation_flight(int state) {
+
+  switch(state) {
+  case GL4DH_INIT:
+    initDataL2();
+    return;
+  case GL4DH_FREE:
+    return;
+  case GL4DH_UPDATE_WITH_AUDIO:
+    
+    return;
+  default: /* GL4DH_DRAW */
+    drawLaby2();
+    idle2();
+    
+    return;
+  }
 }

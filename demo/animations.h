@@ -38,8 +38,8 @@ extern "C" {
   extern void animation_flash(int state);
   extern void animation_vide(int state);
   extern void animation_damier(int state);
-  extern void animation_base(int state);
-  extern void animation_earth(int state);
+  extern void animation_flight(int state);
+  extern void animation_landing(int state);
   extern void animationsInit(void);
   extern void animation_laby(int state);
   extern void animation_Arrte(int state);
@@ -59,11 +59,8 @@ extern "C" {
   extern void initDataL(void);
   extern void drawLaby(void);
   extern void idle(void);
+  extern void animation_text(int state);
 
-
-
-
-  extern void text_animation(int state);
 #ifdef __cplusplus
 }
 #endif

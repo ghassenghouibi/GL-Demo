@@ -3,10 +3,10 @@
 #include <GL4D/gl4duw_SDL2.h>
 #include <SDL_image.h>
 
+extern void assimpInit_flight(const char * filename);
+extern void assimpDrawScene_flight(void);
+extern void assimpQuit_flight(void);
 
-extern void assimpInit3(const char * filename);
-extern void assimpDrawScene3(void);
-extern void assimpQuit3(void);
 
  void resize2(int w, int h);
 
@@ -52,18 +52,17 @@ static GLfloat _planeScale = 100.0f;
   glEnable(GL_TEXTURE_2D);
   _pId  = gl4duCreateProgram("<vs>shaders/laby.vs", "<fs>shaders/laby.fs", NULL);
   _pId2 = gl4duCreateProgram("<vs>shaders/model.vs", "<fs>shaders/model.fs", NULL);
-  //_pId3 = gl4duCreateProgram("<vs>shaders/model.vs", "<fs>shaders/clouds.fs", NULL);
 
   gl4duGenMatrix(GL_FLOAT, "modelMatrix");
   gl4duGenMatrix(GL_FLOAT, "viewMatrix");
   gl4duGenMatrix(GL_FLOAT, "projectionMatrix");
-  //resize(_wW, _wH);
+  
 }
 
-/*!\brief initializes data : 
- *
- * creates 3D objects (plane and sphere) and 2D textures.
- */
+/*
+*!\brief initializes data :
+* creates 3D objects (plane and sphere) and 2D textures.
+*/
 
  void initDataL2(void) {
   initGL2();
@@ -73,13 +72,12 @@ static GLfloat _planeScale = 100.0f;
   _plane = gl4dgGenQuadf();
   /* generates a cube using GL4Dummies */
   _cube = gl4dgGenCubef();
-  //_sphere = gl4dgGenSpheref(30, 30); //bounding sphere
 
   _sphere1 = gl4dgGenSpheref(20,10);
 
 
 
-  assimpInit3("public/model/Shrek.obj");
+  assimpInit_flight("public/model/NCC-1701/NCC-1701.obj");
 
   /* creation and parametrization of the plane texture */
   glGenTextures(1, &_planeTexId);
@@ -143,7 +141,6 @@ static GLfloat _planeScale = 100.0f;
 
     SDL_Surface * t2;
     glGenTextures(1, &TexS2);
-  // for(i = 0; i < 2; i++) {
     glBindTexture(GL_TEXTURE_2D, TexS2);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -241,7 +238,6 @@ static GLfloat yt = 80.0;
 
 
   gl4dgDraw(_sphere1);
-  //gl4dgDraw(_sphere);
 
 
   
@@ -287,14 +283,11 @@ static GLfloat yt = 80.0;
       gl4duPushMatrix(); {
         if(_labyrinth[j * _lab_side + (_lab_side-1-i)] == -1){
           gl4duTranslatef(_planeScale - (_planeScale / _lab_side) - (_planeScale / _lab_side * 2 ) * i,5.0, _planeScale - (_planeScale / _lab_side) - (_planeScale / _lab_side * 2) * j);
-          // gl4duRotatef(-45, 0, 1, 0);
-
           gl4duScalef((_planeScale / _lab_side), 20.0,(_planeScale / _lab_side));
           gl4duSendMatrices();
         }
       } 
       gl4duPopMatrix();
-  // glCullFace(GL_BACK);
       glBindTexture(GL_TEXTURE_2D, Tex);
       /* sets in pId the uniform variable texRepeat to the plane scale */
       glUniform1f(glGetUniformLocation(_pId, "texRepeat"), 1.0);
@@ -308,7 +301,7 @@ static GLfloat yt = 80.0;
   gl4duScalef(100,100,100);
 
   glUniform1i(glGetUniformLocation(_pId, "inv"), 1);
-  assimpDrawScene3();
+  assimpDrawScene_flight();
   glUniform1i(glGetUniformLocation(_pId, "inv"), 0);
 
   /* enables cull facing and depth testing */

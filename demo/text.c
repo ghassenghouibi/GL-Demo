@@ -109,7 +109,7 @@ static void free_text(void) {
     glDeleteTextures(1, &_textTexId);
 }
 
-void text_animation(int state) {
+void animation_text(int state) {
   switch(state) {
     case GL4DH_INIT:
       init_text();

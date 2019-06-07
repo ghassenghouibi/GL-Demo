@@ -4,9 +4,9 @@
 #include <SDL_image.h>
 
 
-extern void assimpInit(const char * filename);
-extern void assimpDrawScene(void);
-extern void assimpQuit(void);
+extern void assimpInit_Shrek(const char * filename);
+extern void assimpDrawScene_Shrek(void);
+extern void assimpQuit_Shrek(void);
 
 static void resizeZA(int w, int h);
 
@@ -16,8 +16,6 @@ extern unsigned int * labyrinth(int w, int h);
 
 /*!\brief opened window width and height */
 static int _wW = 1250, _wH = 750;
-/*!\brief mouse position (modified by pmotion function) */
-// static int _xm = 600, _ym = 300;
 /*!\brief labyrinth to generate */
 static GLuint * _labyrinth = NULL;
 /*!\brief labyrinth side */
@@ -76,9 +74,7 @@ static GLfloat _planeScale = 100.0f;
 
   _sphere = gl4dgGenSpheref(80, 30);
 
-  assimpInit("public/model/Shrek.obj");
-  // assimpInit("SuperBoo/Obj/S_Boo.obj");
-  //assimpInit("model/persocarreau.obj");
+  assimpInit_Shrek("public/model/shrek/Shrek.obj");
 
   /* creation and parametrization of the plane texture */
   glGenTextures(1, &_planeTexId);
@@ -101,18 +97,8 @@ static GLfloat _planeScale = 100.0f;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, northsouth);
 
   
-  // GLint t[] = {RGB(255, 100, 0)};
-  // glGenTextures(1, &Tex);
-  // glBindTexture(GL_TEXTURE_2D, Tex);
-  // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, t);
-  // IMG_Init(IMG_INIT_JPG);
-    SDL_Surface * t;
+   SDL_Surface * t;
     glGenTextures(1, &Tex);
-  // for(i = 0; i < 2; i++) {
     glBindTexture(GL_TEXTURE_2D, Tex);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -131,10 +117,8 @@ static GLfloat _planeScale = 100.0f;
   glBindTexture(GL_TEXTURE_2D, 0);
 
 
-  // }
     SDL_Surface * t1;
     glGenTextures(1, &Tex1);
-  // for(i = 0; i < 2; i++) {
     glBindTexture(GL_TEXTURE_2D, Tex1);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -155,7 +139,6 @@ static GLfloat _planeScale = 100.0f;
 
     SDL_Surface * t2;
     glGenTextures(1, &TexS2);
-  // for(i = 0; i < 2; i++) {
     glBindTexture(GL_TEXTURE_2D, TexS2);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -206,8 +189,8 @@ void idle(void) {
 }
 
 
-static GLfloat TmpSA = 0.0, TmpSAZ = 0.0, myx = 30.0, myz = 0.0;
-// static GLfloat TmpSA2 = 10.0, TmpSAZ2 = 0.0;
+static GLfloat _pos_x = 0.0, _pos_z = 0.0, myx = 30.0, myz = 0.0;
+// static GLfloat _pos_x2 = 10.0, _pos_z2 = 0.0;
 static GLfloat yt = 10.0; 
 /*!\brief function called by GL4Dummies' loop at draw.*/
  void drawLaby(void) {
@@ -218,22 +201,11 @@ static GLfloat yt = 10.0;
   glUseProgram(_pId);
 
   glActiveTexture(GL_TEXTURE0);
-  // glBindTexture(GL_TEXTURE_2D, _tId);
   glUniform1i(glGetUniformLocation(_pId2, "tex"), 0);
 
   gl4duBindMatrix("viewMatrix");
   /* loads the identity matrix in the current GL4Dummies matrix ("viewMatrix") */
   gl4duLoadIdentityf();
-
-  /* modifies the current matrix to simulate camera position and orientation in the scene */
-  /* see gl4duLookAtf documentation or gluLookAt documentation */
-  // gl4duLookAtf(_cam.x, 3.6, _cam.z, 
-	 //       _cam.x - sin(_cam.theta), 3.0 - (_ym - (_wH >> 1)) / (GLfloat)_wH, _cam.z - cos(_cam.theta), 
-	 //       0.0, 1.0,0.0);
-   // gl4duLookAtf(_cam.x, 40.6, _cam.z, 
-   //       _cam.x - sin(_cam.theta), 39.6 , _cam.z - cos(_cam.theta), 
-   //       0.0, 5.0,0.0);
-  // printf("X : %f Z : %f yt : %f\n", _x, _y, yt);
   gl4duLookAtf(myx , yt+20, myz,     -80 + _x,  -yt , 50 + _z,           -0.0, 1.0, -0.0);
   gl4duBindMatrix("modelMatrix");
   /* loads the identity matrix in the current GL4Dummies matrix ("modelMatrix") */
@@ -245,10 +217,6 @@ static GLfloat yt = 10.0;
   
 
 
-  if(yt > 140.0)
-    yt = 0.0;
-  else
-    yt += 0.04;
 
 
   GLint i, j;
@@ -305,7 +273,6 @@ static GLfloat yt = 10.0;
 	  	  }
 		  } 
 	  	gl4duPopMatrix();
-  // glCullFace(GL_BACK);
 	  	glBindTexture(GL_TEXTURE_2D, Tex);
 	  	/* sets in pId the uniform variable texRepeat to the plane scale */
 			glUniform1f(glGetUniformLocation(_pId, "texRepeat"), 1.0);
@@ -318,32 +285,30 @@ static GLfloat yt = 10.0;
 
 
 
-  gl4duTranslatef(TmpSA, 8,  TmpSAZ);
+  gl4duTranslatef(_pos_x, 8,  _pos_z);
 
   gl4duScalef(30, 30, 30);
 
-  if(TmpSA <= -26.0){
-    // TmpSA = 0.0;
-    if(TmpSAZ >= 75.0){
-      TmpSAZ = 0.0;
-    }else{
-      TmpSAZ += 0.1;
-      if(myx > -66){
-        myx -= 0.1;
+    if(_pos_x <= -26.0){
+      if(_pos_z >= 75.0){
+      _pos_z = 0.0;
       }else{
-        myx = 20;
-        myz -= 0.5;
-        if(myz > 20)
-          myz = 10;
-      }
+        _pos_z += 0.05;
+        if(myx > -66){
+          myx -= 0.1;
+        }else{
+          myx = 20;
+          myz -= 0.5;
+          if(myz > 20)
+            myz = 10;
+          }
+        }
     }
-  }
-  else{
-    TmpSA -= 0.1;
-  }
-  // printf("%f\n", myx);
+    else{
+    _pos_x -= 0.1;
+    }
   glUniform1i(glGetUniformLocation(_pId, "inv"), 1);
-  assimpDrawScene();
+  assimpDrawScene_Shrek();
   glUniform1i(glGetUniformLocation(_pId, "inv"), 0);
 
 

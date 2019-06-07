@@ -21,8 +21,8 @@ LDFLAGS = -lm -lSDL2_ttf -lSDL2_mixer -lSDL2_image -lassimp
 PROGNAME = Shrek
 VERSION = 1.0
 distdir = $(PROGNAME)-$(VERSION)
-HEADERS =  audioHelper.h animations.h assimp.h assimp3.h
-SOURCES = text.c audioHelper.c flight.c assimp.c assimp3.c makeLabyrinth.c laby.c animations.c window.c
+HEADERS =  audioHelper.h animations.h assimp.h assimp_flight.h assimp_shrek.h
+SOURCES = text.c audioHelper.c flight.c assimp.c landing.c assimp_flight.c assimp_shrek.c makeLabyrinth.c laby.c animations.c window.c
 OBJ = $(SOURCES:.c=.o)
 DOXYFILE = documentation/Doxyfile
 EXTRAFILES = COPYING $(wildcard shaders/*.?s) DejaVuSans-Bold.ttf
